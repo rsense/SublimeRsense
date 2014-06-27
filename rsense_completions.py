@@ -21,7 +21,6 @@ class RsenseCompletions(sublime_plugin.EventListener):
         return ""
 
     def make_command(self, view, prefix, location, path):
-      rsense_com = "ruby /Users/ericwest/git/community/rsense_jrubyparser/rsense/bin/rsense code-completion "
       detect_proj = self.get_project(view)
 
       filestring = "--file=%s " % path
