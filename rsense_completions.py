@@ -75,9 +75,10 @@ class RsenseCompletions(sublime_plugin.EventListener):
       parsed = self._parse_output(self._sanitize_output(output).strip())
 
       for line in parsed:
-        show_string = line[0] + "\t" + line[2] + "\t" + line[3]
-        compl = line[1]
-        completions.append((show_string, compl))
+        if len(line) >= 4:
+          show_string = line[0] + "\t" + line[2] + "\t" + line[3]
+          compl = line[0]
+          completions.append((show_string, compl))
 
       return completions
 
@@ -85,6 +86,7 @@ class RsenseCompletions(sublime_plugin.EventListener):
     def get_completions(self, view, text, location, path):
       command_string = self.make_command(view, text, location, path)
       raw_output = self.run_command(command_string)
+      # print(raw_output.decode('utf-8'))
       return self.clean_and_arrange(raw_output)
 
 
