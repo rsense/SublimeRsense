@@ -4,6 +4,16 @@ import subprocess
 import re
 import os
 import tempfile
+try:
+    # Python 3
+    import urllib.request as urllib_compat
+    from urllib.error import HTTPError, URLError
+
+except (ImportError):
+    # Python 2
+    import urllib2 as urllib_compat
+    from urllib2 import HTTPError, URLError
+
 
 # RUBY_METHOD_SEP_PATTERN = re.compile('[^.:]*$')
 RUBY_METHOD_SEP_PATTERN = re.compile('((?<=\.).*$)|((?<=::).*$)')
@@ -20,18 +30,27 @@ class RsenseCompletions(sublime_plugin.EventListener):
       else:
         return ""
 
-    def make_command(self, view, prefix, location, path):
+    def make_command(self, view, text, location, path):
+      textarr = text.split("\n")
+      textstring = ""
+      for t in textarr:
+        textstring.join([t, "\n"])
+
+      row, col = view.rowcol(location)
+      locstring = "".join([str(row), ":", str(col)])
+
+      rsense_com = "./rsense_completions.rb "
+
       detect_proj = self.get_project(view)
 
-      filestring = "--file=%s " % path
+      proj_str = " --project=%s " % detect_proj
 
-      if prefix:
-        prefix_str = "--prefix=%s " % prefix
-      else:
-        prefix_str = ""
+      filestring = " --filepath=%s " % path
 
-      loc_str = "--location=%s " % location
-      return "".join([rsense_com, detect_proj, filestring, prefix_str, loc_str])
+      text_str = " --text='%s' " % text
+
+      loc_str = " --location='%s' " % locstring
+      return "".join([rsense_com, proj_str, filestring, text_str, loc_str])
 
     def run_command(self, command_string):
       pipe = subprocess.Popen(command_string, shell=True, stdout=subprocess.PIPE)
@@ -45,7 +64,7 @@ class RsenseCompletions(sublime_plugin.EventListener):
 
     def _parse_output(self, output):
       lines = output.split("\n")
-      line_parts = [line.split(" ", 5) for line in lines]
+      line_parts = [line.split(" ", 4) for line in lines]
       return line_parts
 
     def clean_and_arrange(self, output):
@@ -56,16 +75,15 @@ class RsenseCompletions(sublime_plugin.EventListener):
       parsed = self._parse_output(self._sanitize_output(output).strip())
 
       for line in parsed:
-        if len(line) >= 5:
-          show_string = line[1] + "\t" + line[3] + "\t" + line[4]
-          compl = line[1]
-          completions.append((show_string, compl))
+        show_string = line[0] + "\t" + line[2] + "\t" + line[3]
+        compl = line[1]
+        completions.append((show_string, compl))
 
       return completions
 
     # TODO: Filter completions for metadata returned by rsense.
-    def get_completions(self, view, prefix, location, path):
-      command_string = self.make_command(view, prefix, location, path)
+    def get_completions(self, view, text, location, path):
+      command_string = self.make_command(view, text, location, path)
       raw_output = self.run_command(command_string)
       return self.clean_and_arrange(raw_output)
 
@@ -84,7 +102,7 @@ class RsenseCompletions(sublime_plugin.EventListener):
 
       return match
 
-    def on_query_completions(self, view, prefix, locations):
+    def on_query_completions(self, view, text, locations):
 
       if locations is None:
         return []
@@ -110,5 +128,5 @@ class RsenseCompletions(sublime_plugin.EventListener):
         #logger.debug("Rsense does not complete in SublimeREPL views")
         return
 
-      return self.get_completions(view, prefix, location, tmp)
+      return self.get_completions(view, text, location, view.file_name())
 
