@@ -39,7 +39,7 @@ class RsenseCompletions(sublime_plugin.EventListener):
       row, col = view.rowcol(location)
       locstring = "".join([str(row), ":", str(col)])
 
-      rsense_com = "./rsense_completions.rb "
+      rsense_com = "_rsense_commandline.rb "
 
       detect_proj = self.get_project(view)
 

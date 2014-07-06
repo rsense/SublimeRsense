@@ -28,11 +28,16 @@ Or install it yourself as:
 
     $ gem install rsense
 
+If you use `rbenv` please be sure to rehash: `rbenv rehash`.
+
 Then install this package via [Sublime Text's package manager](https://sublime.wbond.net/), within preferences. Just search for `rsense`.
 
 ## Usage
 
 You'll need to run `rsense start` from the command line, though we do eventually plan to add an command for starting and stopping the server.
+You can tell RSense where your project is with `--path /path/to/project/root`.
+The path passed in should be to the directory where your Gemfile is. This may improve the user experience.
+
 Completions are triggered on `.` and `::`.
 
 More information about rsense can be found at http://rsense.github.io/ .
