@@ -4,32 +4,6 @@ require 'optparse'
 require 'json'
 require 'net/http'
 
-options = { command: "code_completion" }
-OptionParser.new do |opts|
-  opts.banner = "Usage: rsense start [options]"
-
-  opts.on("--project PROJECT", "project path") do |project|
-    options[:project] = project
-  end
-
-  opts.on("--filepath FILEPATH", "Filepath") do |filepath|
-    options[:file] = filepath
-  end
-
-  opts.on("--text TEXT", "Text") do |text|
-    options[:code] = text
-  end
-
-  opts.on("--location LOCATION", "Location") do |location|
-    loc = location.split(':')
-    row = loc.first
-    col = loc.last
-    options[:location] = { row: (row.to_i + 1), column: (col.to_i + 1) }
-  end
-end.parse!
-
-jsondata = JSON.generate(options)
-
 module Rsense
   class Request
     SOCKET_PATH = 'http://localhost'
@@ -71,6 +45,31 @@ module Rsense
   end
 end
 
-compls = Rsense::Main.run(jsondata)
+options = { command: "code_completion" }
+OptionParser.new do |opts|
+  opts.banner = "Usage: rsense start [options]"
 
+  opts.on("--project PROJECT", "project path") do |project|
+    options[:project] = project
+  end
+
+  opts.on("--filepath FILEPATH", "Filepath") do |filepath|
+    options[:file] = filepath
+  end
+
+  opts.on("--text TEXT", "Text") do |text|
+    options[:code] = text
+  end
+
+  opts.on("--location LOCATION", "Location") do |location|
+    loc = location.split(':')
+    row = loc.first
+    col = loc.last
+    options[:location] = { row: (row.to_i + 1), column: (col.to_i + 1) }
+  end
+end.parse!
+
+jsondata = JSON.generate(options)
+
+compls = Rsense::Main.run(jsondata)
 puts compls

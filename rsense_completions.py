@@ -16,7 +16,7 @@ except (ImportError):
 
 
 # RUBY_METHOD_SEP_PATTERN = re.compile('[^.:]*$')
-RUBY_METHOD_SEP_PATTERN = re.compile('((?<=\.).*$)|((?<=::).*$)')
+RUBY_METHOD_SEP_PATTERN = re.compile('((?<=\.).*)|((?<=::).*)')
 
 class RsenseCompletions(sublime_plugin.EventListener):
 
@@ -75,10 +75,14 @@ class RsenseCompletions(sublime_plugin.EventListener):
       parsed = self._parse_output(self._sanitize_output(output).strip())
 
       for line in parsed:
-        if len(line) >= 4:
-          show_string = line[0] + "\t" + line[2] + "\t" + line[3]
+        show_string = ""
+        candidate = []
+        if len(line) > 1:
+          for strng in line:
+            candidate.append(strng)
+            candidate.append("  ")
           compl = line[0]
-          completions.append((show_string, compl))
+          completions.append((show_string.join(candidate), compl))
 
       return completions
 
@@ -86,7 +90,6 @@ class RsenseCompletions(sublime_plugin.EventListener):
     def get_completions(self, view, text, location, path):
       command_string = self.make_command(view, text, location, path)
       raw_output = self.run_command(command_string)
-      # print(raw_output.decode('utf-8'))
       return self.clean_and_arrange(raw_output)
 
 
